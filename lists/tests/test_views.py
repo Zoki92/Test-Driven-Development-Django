@@ -6,6 +6,10 @@ from django.template.loader import render_to_string
 from django.utils.html import escape
 from lists.forms import ItemForm, EMPTY_ITEM_ERROR
 from lists.models import Item, List
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
 # Create your tests here.
 class HomePageTest(TestCase):
 	def test_uses_home_template(self):
@@ -150,6 +154,20 @@ class NewListView(TestCase):
 		response = self.client.post('/lists/new', data={'text': 'A new list item'})
 		new_list = List.objects.first()
 		self.assertRedirects(response, f'/lists/{new_list.id}/')
+
+class MyListsTest(TestCase):
+
+	def test_my_lists_url_renders_my_lists_template(self):
+		User.objects.create(email='a@b.com')
+		response = self.client.get('/lists/users/a@b.com/')
+		self.assertTemplateUsed(response, 'my_lists.html')
+
+	def test_passes_correct_owner_to_template(self):
+		User.objects.create(email='wrong@owner.com')
+		correct_user = User.objects.create(email='a@b.com')
+		response = self.client.get('/lists/users/a@b.com/')
+		self.assertEqual(response.context['owner'], correct_user)
+
 
 
 

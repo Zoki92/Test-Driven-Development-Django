@@ -2,6 +2,9 @@ from django.shortcuts import render, redirect
 from django.core.exceptions import ValidationError
 from .forms import ItemForm, ExistingListItemForm
 from .models import Item, List
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 def home_page(request):
 	return render(request, 'home.html', {'form': ItemForm()})
@@ -29,3 +32,8 @@ def add_item(request, list_id):
 	list_ = List.objects.get(id=list_id)
 	Item.objects.create(text=request.POST['text'], list=list_)
 	return redirect(f'/lists/{list_.id}/')
+
+	
+def my_lists(request, email):
+    owner = User.objects.get(email=email)
+    return render(request, 'my_lists.html', {'owner': owner})
